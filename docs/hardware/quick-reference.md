@@ -112,12 +112,13 @@ LED (+)    →    GPIO 2  [via 330Ω resistor]
 LED (-)    →    GND
 ```
 
-### 7. PoE Power
+### 7. Power (USB/DC - Same as Original)
 ```
-PoE Switch →    PoE PD Module    →    ESP32
-─────────────────────────────────────────────
-48V DC     →    VIN+/VIN-        5V DC    →    Vin or 5V pin
-                                       →    GND     →    GND
+Power Source → ESP32 DevKit
+─────────────────────────────────
+USB Cable  →    Micro-USB port
+OR
+DC Jack    →    Vin pin + GND (7-12V DC)
 ```
 
 ---
@@ -139,7 +140,6 @@ PoE Switch →    PoE PD Module    →    ESP32
 ✅ GPIO 15 has 10kΩ pull-up to 3.3V  
 ✅ All 3 buttons have 10kΩ pull-ups to 3.3V  
 ✅ W5500 and Display share MOSI/MISO/SCK but have separate CS  
-✅ PoE module outputs regulated 5V (NOT raw 48V)  
 ✅ All GND connections are common  
 ✅ No short circuits between pins  
 ✅ Decoupling capacitors installed near ESP32  
@@ -148,8 +148,7 @@ PoE Switch →    PoE PD Module    →    ESP32
 
 ## Power Requirements
 
-- **Input:** PoE 48V DC (from PoE switch/injector)
-- **ESP32:** 5V via PoE module output
+- **Input:** 5V via USB or 7-12V via DC jack (same as original RFID-Shift-Mate)
 - **3.3V Rail:** ESP32 onboard regulator
 - **Total Current:** ~500mA peak
 - **Total Power:** ~1.8W peak
@@ -158,9 +157,10 @@ PoE Switch →    PoE PD Module    →    ESP32
 
 ## Quick Test After Wiring
 
-1. Power on via PoE
-2. Open serial monitor at 115200 baud
-3. You should see:
+1. Power on via USB cable
+2. Connect Ethernet cable from W5500 to your network switch/router
+3. Open serial monitor at 115200 baud
+4. You should see:
    ```
    RFID-Shift-Mate 2
    Initializing...
@@ -168,8 +168,8 @@ PoE Switch →    PoE PD Module    →    ESP32
    Display ready
    RFID reader ready
    ```
-4. Display should show boot screen
-5. W5500 Ethernet LED should be lit
+5. Display should show boot screen
+6. W5500 Ethernet LED should be lit
 
 ---
 

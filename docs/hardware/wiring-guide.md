@@ -18,7 +18,6 @@ This document provides the complete pin mapping for connecting all hardware comp
 6. **Passive Buzzer** (3.3V or 5V)
 7. **Status LED** (or use onboard LED)
 8. **3x Push Buttons** (momentary, normally open)
-9. **PoE PD Controller** (e.g., Si3402 module or integrated on W5500 board)
 
 ---
 
@@ -86,12 +85,6 @@ Used by: **W5500 Ethernet** + **ST7789V Display** (shared bus, separate CS pins)
 | | | | |
 | Status LED (+) | Anode | **GPIO 2** | Onboard LED (blinks during boot) |
 | Status LED (-) | Cathode | **GND** | Via 330Ω resistor |
-| | | | |
-| **PoE Power Input** | | | |
-| PoE Module | VIN+ | **PoE+ 48V** | From PoE switch/injector |
-| PoE Module | VIN- | **GND** | PoE ground |
-| PoE Module | VOUT+ | **5V** | Regulated 5V output |
-| PoE Module | VOUT- | **GND** | Power ground |
 
 ---
 
@@ -140,7 +133,7 @@ Buttons use **input-only pins** (GPIO 34, 35, 36) which **cannot use internal pu
 
 Or use the ESP32's internal pull-ups if the pins support it (GPIO 34-39 do NOT have internal pull-ups, so external resistors are required).
 
-### 5. Power Supply
+### 5. Power Supply (USB/DC - Same as Original)
 
 **Total estimated current draw:**
 - ESP32: ~240mA (WiFi active)
@@ -153,16 +146,19 @@ Or use the ESP32's internal pull-ups if the pins support it (GPIO 34-39 do NOT h
 
 **Total:** ~474mA typical, ~500mA peak
 
-**PoE provides:** Up to 12.95W at 48V = ~270mA at 48V
+**Power source:** USB cable or DC barrel jack (same as RFID-Shift-Mate 1)
 
 **Power path:**
 ```
-PoE Switch (48V) → PoE PD Module → 5V DC → ESP32 Vin or 5V pin
-                                          → 3.3V regulator (AMS1117) → 3.3V rail
+USB Power (5V) or DC Power (7-12V)
+    ↓
+ESP32 DevKit voltage regulator
+    ↓
+3.3V rail (powers all modules)
 ```
 
 **Important:** 
-- Use the PoE module's **regulated 5V output** to power the ESP32
+- The ESP32 DevKit's onboard regulator handles voltage conversion
 - The ESP32's onboard 3.3V regulator can supply ~500mA, which is sufficient
 - Add 100µF and 0.1µF decoupling capacitors near the ESP32 power pins
 
@@ -214,21 +210,17 @@ ESP32
 ### Power Layout
 
 ```
-PoE Switch (48V DC)
+USB Power (5V) or DC Power (7-12V)
     ↓
-PoE PD Controller Module
+ESP32 DevKit (via USB or DC jack)
     ↓
-5V DC Output
+ESP32 internal 3.3V regulator
     ↓
-    ├── ESP32 Vin pin (or 5V pin)
-    │       ↓
-    │   ESP32 internal 3.3V regulator
-    │       ↓
-    │   3.3V rail (powers all modules)
-    │
-    └── Decoupling capacitors
-        ├── 100µF electrolytic (near ESP32)
-        └── 0.1µF ceramic (near ESP32)
+3.3V rail (powers all modules)
+    ↓
+Decoupling capacitors
+├── 100µF electrolytic (near ESP32)
+└── 0.1µF ceramic (near ESP32)
 ```
 
 ---
@@ -249,14 +241,6 @@ PoE PD Controller Module
 | 100µF | 1 | Power supply decoupling (bulk) |
 | 0.1µF | 1 | Power supply decoupling (HF) |
 
-### PoE Components
-
-| Component | Example Part | Notes |
-|-----------|--------------|-------|
-| PoE PD Controller | Si3402-B-GM or module | 48V to 5V isolated converter |
-| PoE Switch | 8-port 802.3af/at | 120W total budget |
-| OR PoE Injector | 48V 15W injector | If switch doesn't have PoE |
-
 ---
 
 ## Assembly Checklist
@@ -267,23 +251,21 @@ Before powering on:
 - [ ] GPIO 15 has 10kΩ pull-up to 3.3V
 - [ ] All 3 buttons have 10kΩ pull-ups to 3.3V
 - [ ] W5500 and Display share MOSI, MISO, SCK but have separate CS pins
-- [ ] PoE module outputs regulated 5V (not raw 48V)
 - [ ] Decoupling capacitors are near ESP32 power pins
 - [ ] No short circuits between pins
-- [ ] All modules powered from 3.3V (except PoE input)
+- [ ] All modules powered from 3.3V
 
 ---
 
 ## Power-On Sequence
 
-1. **Connect PoE cable** from PoE switch to W5500 RJ45 jack
-2. **Verify PoE module output** is 5V (measure with multimeter)
-3. **Power on ESP32** (via PoE module 5V output)
-4. **Observe boot sequence:**
+1. **Connect Ethernet cable** from W5500 RJ45 jack to your network switch/router
+2. **Power on ESP32** via USB cable or DC power supply
+3. **Observe boot sequence:**
    - GPIO 2 LED blinks (normal boot)
    - Display shows "RFID ShiftMate 2" boot screen
    - Ethernet link LED on W5500 lights up
-5. **Check serial monitor** (115200 baud) for initialization messages
+4. **Check serial monitor** (115200 baud) for initialization messages
 
 ---
 
@@ -296,8 +278,8 @@ Before powering on:
 
 ### Ethernet not connecting
 - Check W5500 CS pin (GPIO 16) is connected
-- Verify RJ45 cable is plugged into PoE switch
-- Check PoE module is providing power
+- Verify RJ45 cable is plugged into network switch/router
+- Check W5500 module is receiving 3.3V power
 
 ### RFID not reading cards
 - Check RFID CS pin (GPIO 5) is connected
@@ -325,13 +307,14 @@ Before powering on:
 | Ethernet Module | W5500 module with RJ45 | 1 | $8-12 |
 | Display | ST7789V 2.0" TFT SPI | 1 | $8-12 |
 | RTC Module | DS3231 module | 1 | $3-5 |
-| PoE PD Module | Si3402 or similar | 1 | $10-15 |
-| PoE Switch | 8-port 802.3af/at | 1 | $40-60 |
 | Passive Buzzer | 3.3V or 5V | 1 | $1-2 |
 | Push Buttons | 6x6mm momentary | 3 | $1 |
 | Resistors | 10kΩ, 330Ω | 5 | $1 |
 | Capacitors | 100µF, 0.1µF | 2 | $1 |
-| **Total** | | | **$82-123** |
+| USB Cable | Micro-USB | 1 | $2-3 |
+| **Total** | | | **$33-50** |
+
+**Note:** Power supply is via standard USB cable (same as original RFID-Shift-Mate).
 
 ---
 
