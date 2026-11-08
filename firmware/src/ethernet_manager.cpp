@@ -12,14 +12,15 @@ EthernetManager::EthernetManager() {
 bool EthernetManager::init() {
     Serial.println("Initializing Ethernet (W5500)...");
     
-    // Configure SPI for W5500
-    SPI.begin(ETH_SCLK_PIN, ETH_MISO_PIN, ETH_MOSI_PIN, ETH_SS_PIN);
+    // Configure HSPI for W5500
+    // HSPI bus: GPIO 13 (MOSI), GPIO 14 (MISO), GPIO 15 (SCK)
+    SPI.begin(TFT_SCLK_PIN, TFT_MISO_PIN, TFT_MOSI_PIN, ETH_SS_PIN);
     
-    // Initialize Ethernet
+    // Initialize Ethernet with W5500
     ETH.begin(
         ETH_ADDR,           // ETH_ADDR (usually 0 or 1)
         ETH_INT_PIN,        // INT pin (or -1 if not used)
-        ETH_CS_PIN,         // CS pin
+        ETH_SS_PIN,         // CS pin
         SPI,                // SPI instance
         ETH_CLK_MHZ,        // SPI clock speed
         ETH_PHY_TYPE        // PHY type (W5500)

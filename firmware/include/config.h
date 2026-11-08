@@ -9,31 +9,35 @@
 
 // RFID MFRC522 (VSPI)
 #define RFID_SS_PIN     5
-#define RFID_RST_PIN    22
+#define RFID_RST_PIN    4
 
 // Ethernet W5500 (HSPI)
 #define ETH_SS_PIN      16
 #define ETH_RST_PIN     17
-#define ETH_INT_PIN     -1  // Not used
+#define ETH_INT_PIN     -1  // Not used (polling mode)
+#define ETH_ADDR        1   // W5500 address (usually 0 or 1)
+#define ETH_CLK_MHZ     20  // SPI clock speed in MHz
+#define ETH_PHY_TYPE    ETH_PHY_W5500  // PHY type
 
-// Display ST7789V (HSPI, shared with W5500)
-#define TFT_CS_PIN      4
-#define TFT_DC_PIN      2
-#define TFT_RST_PIN     15
-#define TFT_BL_PIN      12
-#define TFT_MOSI_PIN    23  // Shared with W5500
-#define TFT_SCLK_PIN    18  // Shared with W5500
+// Display ST7789V (HSPI, shared bus with W5500)
+#define TFT_CS_PIN      32
+#define TFT_DC_PIN      33
+#define TFT_RST_PIN     25
+#define TFT_BL_PIN      26
+#define TFT_MOSI_PIN    13  // HSPI MOSI
+#define TFT_SCLK_PIN    15  // HSPI SCK (GPIO15 needs 10k pullup to 3.3V)
+#define TFT_MISO_PIN    14  // HSPI MISO
 
-// Buttons
-#define BTN_UP_PIN      14
-#define BTN_DOWN_PIN    13
-#define BTN_SELECT_PIN  12  // Note: Conflicts with TFT_BL, will need adjustment
+// Buttons (input-only pins, no external pull-up needed)
+#define BTN_UP_PIN      34
+#define BTN_DOWN_PIN    35
+#define BTN_SELECT_PIN  36
 
 // Buzzer
 #define BUZZER_PIN      27
 
-// Status LED
-#define LED_PIN         26
+// Status LED (GPIO2 has onboard LED on most ESP32 dev boards)
+#define LED_PIN         2
 
 // I2C (DS3231 RTC)
 #define I2C_SDA         21
