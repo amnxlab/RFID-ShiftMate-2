@@ -219,29 +219,38 @@ RFID-Shift-Mate-2/
 - PC server for AI portal and DNS
 - Existing AI Management Portal
 
-## Critical Issues to Resolve
+## Resolved Decisions
 
-### 1. AI Management Portal Location
-**Status**: Not Found
-- The existing AI Management Portal has not been located in the current workspace
-- Need to identify where the portal is hosted and how to access its source code
-- Must inspect portal's API endpoints, authentication, and device communication protocols
+### 1. AI Management Portal Integration
+**Status**: RESOLVED - Interface Defined
+- Portal integration API specification created (see `integration/ai_portal_interface/api-specification.md`)
+- Device pushes attendance data to portal via HTTP/HTTPS
+- Portal will be implemented separately by the user
+- Device needs to:
+  - Read RFID tag UID
+  - Map UID to Employee ID (from local cache or portal query)
+  - POST attendance record to portal endpoint
+  - Include: employeeId, action (clock_in/clock_out), timestamp, rfidUid, deviceId
+- Portal exposes endpoints for device registration, attendance push, employee sync, heartbeat
+- Device implements client to call portal APIs
 
 ### 2. PoE Power Source
-**Status**: Requires Verification
-- Need to determine if TP-Link router provides PoE output
-- If not, need PoE injector or PoE switch
-- Standard home routers typically do NOT provide PoE output
-- PoE injectors are commonly available and affordable ($20-40)
+**Status**: RESOLVED - PoE+ Switch
+- Will use 10-port PoE+ switch (802.3af/at compliant, 120W total budget)
+- Switch provides PoE power to RFID devices via Ethernet
+- PCB design includes:
+  - PoE PD controller (Si3402 or equivalent)
+  - Isolated DC-DC converter (48V → 5V)
+  - 3.3V LDO for ESP32 and peripherals
+- Power budget: ~1.8W peak per device (well within 120W switch capacity)
 
 ### 3. SSL Certificate Strategy
-**Status**: Requires Decision
-- Cloudflare Origin Certificates only work with publicly-registered domains
-- Internal-only domains (.local, .lan) cannot use publicly-trusted certificates
-- Options:
-  - Self-signed CA with manual trust distribution
-  - Public domain with split DNS (external Cloudflare, internal resolution)
-  - Let's Encrypt with public domain
+**Status**: RESOLVED - Public Domain with Internal DNS
+- Register a public domain (e.g., shiftmate.local or real TLD)
+- Use Cloudflare Origin Certificate for HTTPS
+- Internal DNS server resolves domain to local IPs
+- Certificate is valid because domain is publicly registered
+- DNS resolution is local-only (split DNS architecture)
 
 ### 4. SPI Bus Allocation
 **Status**: Requires Planning
